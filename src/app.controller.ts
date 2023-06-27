@@ -1,65 +1,56 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, Render, Req, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
-import { ConfigServiceFile } from './config/config.service';
-import { Task ,tastStatus} from './location/task.model';
-import { v4 as uuid } from 'uuid';
-import { UUID } from 'crypto';
 import { TaskList } from './task.entity';
 import { AuthGuard } from '@nestjs/passport';
-import { getuser } from './user/jwt.decorator';
-import { UserEntity } from './user.entity';
-
-
-
+import { Logger } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 interface locationobject {
   location: string[],
   district: string[]
 }
 
-
-
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService, private ConfigService: ConfigServiceFile) { }
+  private logger=new Logger('AppController');
+  constructor(private readonly appService: AppService,
+    private confidService:ConfigService
+  
+    ) { 
+      console.log(confidService.get('DB_PORT'),"port");
+      
+    }
 
 
+  //find total tasks
   @Get('/totalTasks')
   @UseGuards(AuthGuard())
-  getNewRoute(): Promise<TaskList[]> {
-    return this.appService.getTotalTasks();
+  getNewRoute(@Req() user): Promise<TaskList[]> {
+    this.logger.verbose(`"${JSON.stringify(user.user.username)}" is asked total tasks`)
+    return this.appService.getTotalTasks(user.user);
   }
 
-  @Get(':status?')
-  getHello(@Query('status') status?:string): Promise<TaskList[]>{
-  console.log(status,"status");
-  
-  return this.appService.getAllTaksByFiltering(status)
+  //filter by id
+  @Get('/findBy/:id?')
+  @UseGuards(AuthGuard())
+  getResultsbyid(@Req() user,@Query('id') id): Promise<TaskList>{
+   return this.appService.getAllTaksByFiltering(id,user.user)
   }
 
- 
-
+  //update the status by id
   @Patch(':id?')
-  updatetask(@Body() updatevalue:any):Promise<void>{
-
+  @UseGuards(AuthGuard())
+  updatetask(@Body() updatevalue:any,@Req() user):Promise<void>{
+    console.log(user.user,"user data");
+    
     const {id,status}=updatevalue
-   
-    return this.appService.updateTask(id,status)
+       return this.appService.updateTask(id,status)
   }
 
-  // @Get('/getLocation')
-  // @Render('list.hbs')
-  // GetLocation(): locationobject {
-  //   return { location: ['location 1', 'location 2', 'location 3'], district: ['Madurai', 'Chennai', 'Trichy'] }
-  // }
-
+  //create tasks
   @Post('createTask')
   @UseGuards(AuthGuard())
   createTask(@Body() task:TaskList, @Req() user):Promise <TaskList[]>{
-    
-
-    
-     return this.appService.createTask(task,user.user)
-
+    return this.appService.createTask(task,user)
   }
 }

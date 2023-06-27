@@ -7,14 +7,15 @@ import { sign } from "crypto";
 import { jwtpoayload } from "./jwtpayloaad.dt";
 import { UserEntity } from "src/user.entity";
 import { Repository } from "typeorm";
-import * as bcrypt from 'bcrypt';
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class jwdStrategy extends PassportStrategy(Strategy){
     constructor(@InjectRepository(UserRepository)
-        private userrepository:UserRepository){
+        private userrepository:UserRepository,
+        private readonly configservice:ConfigService){
             super({
-                secretOrKey:'secreat001',
+                secretOrKey:configservice.get('JWT_secreatkey'),
                 jwtFromRequest:ExtractJwt.fromAuthHeaderAsBearerToken()
             });
         }
@@ -24,7 +25,8 @@ export class jwdStrategy extends PassportStrategy(Strategy){
 
         async validate(payload:jwtpoayload):Promise<UserEntity>{
             const {username}=payload
-            const uservalidate=await this.repository.createQueryBuilder('UserEntity').andWhere('UserEntity.username LIKE :username',{username:`%${username}%`})
+            const uservalidate=await this.repository.createQueryBuilder('UserEntity')
+            .andWhere('UserEntity.username LIKE :username',{username:`%${username}%`})
             const result=await uservalidate.getOne()
             console.log(result,"result");
            if(!result){

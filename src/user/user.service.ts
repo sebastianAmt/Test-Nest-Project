@@ -13,13 +13,10 @@ export class UserService {
 
     async createService(usercredentials:userdto):Promise<void>{
         console.log("yes it is comig in services");
-        
         return await this.userRepository.createuser(usercredentials)
     }
 
     async login(usercredentials:userdto):Promise<{accesstoken:string}>{
-     
-      
         return await this.userRepository.login(usercredentials)
     }
 }

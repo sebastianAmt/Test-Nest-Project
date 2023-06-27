@@ -40,12 +40,9 @@ export class UserRepository {
         console.log(result,"result");
         if(result){
             if(await bcrypt.compare(password,result.password)){
-
                 const payload:jwtpoayload={ username }
                 const accesstoken= this.jwtService.sign(payload)
                 console.log(accesstoken,"accesstoken");
-                
-                
                 return {accesstoken}
             }
             else{

@@ -3,9 +3,6 @@ import { UUID } from "crypto";
 
 export class userdto{
    
-
-   
-    
     @IsString()
       username: String;
 

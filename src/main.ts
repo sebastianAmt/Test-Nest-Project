@@ -5,16 +5,17 @@ import { resolve } from 'path';
 import { LocationModule } from './location/location.module';
 import { ValidationPipe } from '@nestjs/common';
 import { TransformInterceptor } from './trqansform.interseptor';
+import { Logger } from '@nestjs/common';
+
 
 
 async function bootstrap() {
+  const logger=new Logger()
   const baseDir= resolve(__dirname,'..')
   const app = await NestFactory.create<NestExpressApplication>(AppModule );
   app.setViewEngine('hbs')
-  app.setBaseViewsDir(resolve(baseDir,'views'))
-  app.useStaticAssets(resolve(baseDir,'public'))
   app.useGlobalInterceptors(new TransformInterceptor())
   app.useGlobalPipes(new ValidationPipe())
-  await app.listen(3000);
+  await app.listen(4000);
 }
 bootstrap();

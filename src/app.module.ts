@@ -2,17 +2,38 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LocationModule } from './location/location.module';
-import { ConfigModule } from './config/config.module';
-import { ConfigServiceFile } from './config/config.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import config from './typeOrm.config';
 import { TaskList } from './task.entity';
-import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { configureSchema } from './config.schema';
 
 @Module({
-  imports: [LocationModule, UserModule,ConfigModule,TypeOrmModule.forRoot(config),TypeOrmModule.forFeature([TaskList]), AuthModule, UserModule, ],
+  imports: [LocationModule, UserModule,
+    ConfigModule.forRoot({
+      envFilePath: [`.env.stage.${process.env.STAGE}`],validationSchema:configureSchema},
+      ),
+    TypeOrmModule.forRootAsync({
+
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async(configService:ConfigService) => ({
+        type: 'postgres',
+        host: 'localhost',
+        port: configService.get('DB_PORT'),
+        username: configService.get('DB_USERNAME'),
+        password: configService.get('DB_PASSWORD'),
+        database: configService.get('DB_DATABASE'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: true,
+      })
+
+    }),
+    TypeOrmModule.forFeature([TaskList]),  UserModule,],
   controllers: [AppController],
-  providers: [AppService,ConfigServiceFile],
+  providers: [AppService, ConfigService],
 })
-export class AppModule {}
+export class AppModule {
+
+
+}

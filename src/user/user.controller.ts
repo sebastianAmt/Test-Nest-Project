@@ -9,22 +9,19 @@ export class UserController {
 
     constructor(private userService: UserService) { }
 
+    //create credentials 
     @Post('/createcredentials')
     createCredentials(@Body() credentials: userdto): Promise<void> {
         return this.userService.createService(credentials)
 
     }
 
+    //it isses access token
     @Post('/login')
     login(@Body() credentials: userdto): Promise<{ accesstoken: string }> {
         return this.userService.login(credentials)
 
     }
 
-    @Post('test')
-    @UseGuards(AuthGuard())
-    tesfun(@Req() req) {
-        console.log(req, "request");
-
-    }
+   
 }
